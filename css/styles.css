@@ -743,7 +743,7 @@ body.dark-mode .timeline-event a:hover {
 }
 
 /***********************************************
- * MOBILE RESPONSIVE STYLES
+ * MOBILE RESPONSIVE STYLES (max-width: 768px)
  ***********************************************/
 @media (max-width: 768px) {
 
@@ -767,22 +767,24 @@ body.dark-mode .timeline-event a:hover {
         position: relative;
     }
 
-    /* Hide regular navigation links initially */
+    /* Sidebar mobile menu: hidden off-screen to the right by default */
     #navbar ul {
-        display: none;
+        display: flex;
         flex-direction: column;
-        position: absolute;
-        top: 70px;
-        left: 0;
-        width: 100%;
+        position: fixed;
+        top: 0;
+        right: -250px;
+        width: 250px;
+        height: 100vh;
         background: rgba(26, 32, 44, 0.95);
-        padding: 10px 0;
+        padding: 20px;
         z-index: 999;
+        transition: right 0.3s ease;
     }
 
-    /* Show navigation when active (using !important to override desktop styles) */
+    /* When active, slide in from the right */
     #navbar ul.active {
-        display: flex !important;
+        right: 0;
     }
 
     /* Mobile menu toggle button */
@@ -790,9 +792,14 @@ body.dark-mode .timeline-event a:hover {
         display: block;
         background: none;
         border: none;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         color: #fff;
         cursor: pointer;
+    }
+
+    /* Optional: If you want the mobile menu button to show an extra icon */
+    #mobile-menu-toggle .fa-mouse-pointer {
+        margin-left: 0.5rem;
     }
 
     /* Timeline (Experience & Education) Mobile Redesign */
@@ -814,7 +821,6 @@ body.dark-mode .timeline-event a:hover {
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         left: 0 !important;
-        /* Override any desktop left positioning */
     }
 
     .timeline-event::after {
@@ -853,40 +859,12 @@ body.dark-mode .timeline-event a:hover {
         font-size: 0.95rem;
     }
 
-    /* Disable custom cursor and tail toggle on mobile */
-    #custom-cursor,
+    /* Disable custom cursor on mobile but allow tail toggle */
+    #custom-cursor {
+        display: none;
+    }
+
     #tail-toggle {
-        display: none;
-    }
-}
-
-@media (max-width: 768px) {
-
-    /* Hide nav links by default */
-    #navbar ul {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 70px;
-        left: 0;
-        width: 100%;
-        background: rgba(26, 32, 44, 0.95);
-        padding: 10px 0;
-        z-index: 999;
-    }
-
-    /* Show nav links when active */
-    #navbar ul.active {
-        display: flex !important;
-    }
-
-    /* Display the hamburger toggle */
-    #mobile-menu-toggle {
         display: block;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: #fff;
-        cursor: pointer;
     }
 }

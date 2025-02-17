@@ -45,7 +45,7 @@ navLinks.forEach((link) => {
 /***********************************************
  * MOBILE MENU TOGGLE
  ***********************************************/
-window.addEventListener("load", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
   const navUl = document.querySelector("#navbar ul");
 
@@ -54,10 +54,27 @@ window.addEventListener("load", function () {
     return;
   }
 
-  mobileMenuToggle.addEventListener("click", function () {
-    console.log("Mobile menu toggle clicked");
+  mobileMenuToggle.addEventListener("click", () => {
     navUl.classList.toggle("active");
+    console.log(
+      "Mobile menu toggle clicked. Active state:",
+      navUl.classList.contains("active")
+    );
   });
+});
+
+document.addEventListener("click", (event) => {
+  const navUl = document.querySelector("#navbar ul");
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+
+  // If the menu is open and the click is outside both the nav and the toggle (or its children), then close it.
+  if (
+    navUl.classList.contains("active") &&
+    !navUl.contains(event.target) &&
+    !mobileMenuToggle.contains(event.target)
+  ) {
+    navUl.classList.remove("active");
+  }
 });
 
 /***********************************************
@@ -315,6 +332,7 @@ window.addEventListener("scroll", () => {
   if (scrollTop > 300) {
     backToTopButton.style.display = "flex";
     backToTopButton.style.opacity = "1";
+
     progressRing.querySelector("circle:nth-child(2)").style.strokeDashoffset =
       drawProgress;
   } else {
