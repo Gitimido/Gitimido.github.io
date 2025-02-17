@@ -3,24 +3,33 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Mohamed Hazem's Portfolio</title>
+  <title>Mohamed Hazem – Software Engineer Portfolio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta description="Hazem's personal portfolio website showcasing skills and projects." />
+  <meta name="description"
+    content="The professional portfolio of Mohamed Hazem, a Software Engineer specializing in scalable solutions and AI integration." />
+
+  <!-- Favicon -->
   <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+
   <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/cursor.css" />
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
   <!-- Font Awesome for icons -->
-  <script src="https://kit.fontawesome.com/b64dcdf13d.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 
 <body>
   <!-- Navigation Bar -->
   <nav id="navbar">
     <div class="container">
-      <h1 class="logo"><a href="#">Mohamed Hazem</a></h1>
+      <h1 class="logo">
+        <a href="#">Mohamed Hazem</a>
+      </h1>
       <ul>
         <li><a href="#about">About Me</a></li>
         <li><a href="#skills-isolated">Skills</a></li>
@@ -29,15 +38,32 @@
         <li><a href="#education">Education</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
+
+      <!-- Tail Toggle Button -->
+      <button id="tail-toggle" class="mode-btn" title="Toggle Cursor Trail">
+        <i class="fas fa-computer-mouse"></i>
+      </button>
+
+      <!-- Dark Mode Toggle Button -->
+      <button id="dark-mode-toggle" class="mode-btn" title="Toggle Dark Mode">
+        <i class="fas fa-adjust"></i>
+      </button>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <header id="hero">
     <div class="container">
-      <h2>Hello, I'm Mohamed Hazem</h2>
-      <p>A SoftWare Devolper</p>
-      <a href="Sources/MohamedHazem2024Resume.pdf" class="btn" download>Download Resume</a>
+      <h2>
+        Hi, I'm <span class="highlight">Mohamed Hazem</span>
+      </h2>
+      <p>
+        A results-driven <strong>Software Engineer</strong> dedicated to
+        building scalable, AI-powered solutions.
+      </p>
+      <a href="Sources/MohamedHazem.pdf" class="btn" download>
+        Download My Resume
+      </a>
     </div>
   </header>
 
@@ -46,24 +72,34 @@
     <div class="container">
       <h2>About Me</h2>
       <p>
-        Hi, I'm Mohamed Hazem, a passionate software developer who graduated
-        with a Bachelor's degree in Computer Science from the Arab Academy for
-        Science, Technology and Maritime Transport (AASTMT) in 2022. My
-        expertise lies in creating full-stack applications and projects, where
-        I combine my technical skills with a keen interest in integrating AI
-        solutions, particularly when they address real-life problems.
-        Committed to continuous learning, I regularly engage with online
-        courses to expand my knowledge and stay current with emerging
-        technologies. In my free time, I enjoy challenging myself with
-        problem-solving coding exercises, further honing my skills and keeping
-        pace with the latest developments in the field.
+        I'm a passionate <strong>Software Engineer</strong> currently based in
+        Cairo, Egypt, with a strong focus on crafting scalable, high-performance
+        applications. Having graduated with a Bachelor's degree in Computer
+        Science from the Arab Academy for Science, Technology, and Maritime
+        Transport (<strong>AASTMT</strong>), I’ve developed a keen interest in
+        optimizing real-world solutions through robust architecture, memory
+        management, and AI integrations.
+      </p>
+      <p>
+        My professional journey at IdealRatings has given me the opportunity to
+        refine complex systems for ESG and investment analytics, significantly
+        reducing manual processes through specialized data-scraping tools and
+        leading performance enhancements. Outside of work, I engage in side
+        projects, coding challenges, and continuous learning to ensure I stay
+        ahead of evolving technologies. Whether it’s leveraging
+        <strong>machine learning</strong> for personalized nutrition trackers or
+        architecting real-time gaming platforms, I thrive on delivering
+        efficient, scalable solutions that positively impact users.
       </p>
     </div>
   </section>
+
+  <!-- Skills Section -->
   <section id="skills-isolated">
     <div class="skills-section-wrapper">
       <h2 class="skills-section-title">Skills</h2>
       <div class="skills-grid-layout">
+        <!-- Frontend -->
         <div class="skill-category-box">
           <h3 class="skill-category-title">Frontend</h3>
           <div class="skill-list-item">
@@ -71,27 +107,37 @@
             <span class="skill-name">Angular</span>
           </div>
           <div class="skill-list-item">
-            <i class="skill-icon fab fa-sass"></i>
-            <span class="skill-name">SASS</span>
+            <i class="skill-icon fab fa-js"></i>
+            <span class="skill-name">TypeScript</span>
           </div>
           <div class="skill-list-item">
             <i class="skill-icon fab fa-html5"></i>
             <span class="skill-name">HTML5</span>
           </div>
           <div class="skill-list-item">
-            <i class="skill-icon fab fa-js"></i>
-            <span class="skill-name">TypeScript</span>
+            <i class="skill-icon fab fa-sass"></i>
+            <span class="skill-name">SASS</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fab fa-react"></i>
+            <span class="skill-name">Flutter</span>
           </div>
         </div>
+
+        <!-- Backend -->
         <div class="skill-category-box">
           <h3 class="skill-category-title">Backend</h3>
           <div class="skill-list-item">
             <i class="skill-icon fab fa-cuttlefish"></i>
-            <span class="skill-name">C#</span>
+            <span class="skill-name">C# / .NET</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fab fa-node-js"></i>
+            <span class="skill-name">Node.js</span>
           </div>
           <div class="skill-list-item">
             <i class="skill-icon fas fa-server"></i>
-            <span class="skill-name">.NET</span>
+            <span class="skill-name">AWS</span>
           </div>
           <div class="skill-list-item">
             <i class="skill-icon fab fa-cuttlefish"></i>
@@ -102,31 +148,52 @@
             <span class="skill-name">Python</span>
           </div>
         </div>
+
+        <!-- Databases -->
         <div class="skill-category-box">
           <h3 class="skill-category-title">Databases</h3>
           <div class="skill-list-item">
             <i class="skill-icon fas fa-database"></i>
-            <span class="skill-name">SQL</span>
+            <span class="skill-name">SQL / Redis</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fas fa-leaf"></i>
+            <span class="skill-name">MongoDB</span>
           </div>
           <div class="skill-list-item">
             <i class="skill-icon fas fa-fire"></i>
             <span class="skill-name">Firestore</span>
           </div>
           <div class="skill-list-item">
-            <i class="skill-icon fas fa-leaf"></i>
-            <span class="skill-name">MongoDB</span>
+            <i class="skill-icon fas fa-cloud"></i>
+            <span class="skill-name">Mongo Atlas</span>
           </div>
         </div>
+
+        <!-- Other / AI / Tools -->
         <div class="skill-category-box">
-          <h3 class="skill-category-title">Other</h3>
+          <h3 class="skill-category-title">AI & Tools</h3>
           <div class="skill-list-item">
             <i class="skill-icon fas fa-brain"></i>
             <span class="skill-name">Machine Learning</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fas fa-cloud"></i>
+            <span class="skill-name">LangChain / Pinecone</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fas fa-exchange-alt"></i>
+            <span class="skill-name">Socket.IO</span>
+          </div>
+          <div class="skill-list-item">
+            <i class="skill-icon fas fa-toolbox"></i>
+            <span class="skill-name">Postman / RxJS</span>
           </div>
         </div>
       </div>
     </div>
   </section>
+
   <!-- Projects Section -->
   <section id="projects">
     <div class="container">
@@ -137,34 +204,56 @@
         <button class="filter-btn" data-filter="web">Web Development</button>
         <button class="filter-btn" data-filter="app">App Development</button>
         <button class="filter-btn" data-filter="game">Games</button>
-
-        <!-- Add more filters as needed -->
       </div>
       <!-- Project Gallery -->
       <div class="projects-grid">
-        <!-- Project Item -->
+        <!-- iHealthy Calculator -->
         <div class="project-item" data-category="web">
-          <img src="images/iHealthyCalculator.jpg" alt="Project 1" class="icon-image" />
-          <h3>Intake Meassuring tool</h3>
-          <p>in short talk, A calculator that can be used to meassure all intake , supported with Ai </p>
-          <a href="https://ihealthy-calculator.web.app/" class="btn" target="_blank">Open</a>
+          <img src="images/iHealthyCalculator.jpg" alt="iHealthy Calculator" class="icon-image" />
+          <h3>iHealthy Calculator</h3>
+          <p>
+            A specialized nutrition tracker integrating OpenAI and DeepSeek to
+            analyze dietary habits. Users receive personalized, multilingual
+            health recommendations based on their intake history.
+          </p>
+          <a href="https://ihealthy-calculator.web.app/" class="btn" target="_blank">View Live</a>
         </div>
 
-        <div class="project-item" data-category="game">
-          <img src="images/snakeGame.png" alt="Project 2" class="icon-image" />
-          <h3>SnakeLeague</h3>
-          <p>snake game with new Mechansim on global leaderBoard ,based on League of Legends characteristics.</p>
-          <a href="https://snake-league.web.app/" class="btn" target="_blank">Open</a>
+        <!-- Online Gaming Platform -->
+        <div class="project-item" data-category="web">
+          <img src="images/onlinePlatform.jpg" alt="Online Gaming Platform" class="icon-image" />
+          <h3>Online Gaming Platform</h3>
+          <p>
+            An interactive multiplayer gaming hub with real-time chat, user
+            tracking, and live rooms. Deployed on AWS for high availability and
+            performance.
+          </p>
+          <a href="https://gitimido.github.io" class="btn" target="_blank">Learn More</a>
         </div>
 
-
+        <!-- AiSnake -->
         <div class="project-item" data-category="game">
-          <img src="images/snakeAi.jpg" alt="Project 3" class="icon-image" />
+          <img src="images/snakeAi.jpg" alt="AiSnake" class="icon-image" />
           <h3>AiSnake</h3>
-          <p>Have a new experience where the food are trying to hide from you.</p>
-          <a href="https://firemido.itch.io/snakemaze" class="btn" target="_blank">Open</a>
+          <p>
+            A modern twist on the classic Snake, featuring adaptive AI that
+            evades your moves. Built to challenge your skills and keep you
+            engaged.
+          </p>
+          <a href="https://firemido.itch.io/snakemaze" class="btn" target="_blank">Try It</a>
         </div>
-        <!-- Add more project items as needed -->
+
+        <!-- SnakeLeague -->
+        <div class="project-item" data-category="game">
+          <img src="images/snakeGame.png" alt="SnakeLeague" class="icon-image" />
+          <h3>SnakeLeague</h3>
+          <p>
+            A competitive mashup of classic Snake meets MOBA-inspired
+            abilities—compete globally with unique power-ups in fast-paced
+            battles.
+          </p>
+          <a href="https://snake-league.web.app/" class="btn" target="_blank">Play Now</a>
+        </div>
       </div>
     </div>
   </section>
@@ -176,82 +265,81 @@
       <div class="timeline">
         <!-- Timeline Event -->
         <div class="timeline-event">
-          <h3>Software Developer at IdealRatings</h3>
-          <span>November 2022 - Present</span>
+          <h3>Software Engineer at IdealRatings</h3>
+          <span>November 2022 – Present (Cairo, Egypt)</span>
           <p>
-            <strong>Project: Live4</strong><br>
-            Played a pivotal role in maintaining and enhancing Live4, the company's flagship product. Responsibilities
-            included:
-          <ul>
-            <li><strong>Bug Fixing and System Reliability</strong>: Diagnosed and resolved software bugs to ensure
-              optimal
-              performance and user satisfaction.</li>
-            <li><strong>Feature Development</strong>: Designed and implemented new features based on client feedback and
-              industry
-              trends to enhance product functionality.</li>
-            <li><strong>Algorithm Optimization</strong>: Modified existing calculation algorithms to improve accuracy
-              and
-              efficiency, aligning them with updated business requirements.</li>
-            <li><strong>Performance Enhancement</strong>: Optimized system processes, resulting in reduced processing
-              times and
-              improved scalability.</li>
-          </ul>
-          Collaborated closely with cross-functional teams to align technical solutions with business objectives,
-          contributing to
-          an improved user experience.
+            <strong>Project: Live4</strong><br />
+            An investment analytics platform tailored for sustainable investing
+            decisions.
           </p>
+          <ul>
+            <li>
+              <strong>Platform Reliability:</strong> Fixed over 70% of legacy
+              bugs and addressed memory leaks for improved stability.
+            </li>
+            <li>
+              <strong>Asynchronous Handling:</strong> Leveraged RxJS and
+              strongly-typed interfaces to reduce errors and increase code
+              clarity.
+            </li>
+            <li>
+              <strong>Performance Boost:</strong> Refined data-handling
+              processes, accelerating synchronization and user responsiveness.
+            </li>
+            <li>
+              <strong>Agile Delivery:</strong> Delivered solutions within
+              sprint deadlines, enhancing data visibility based on user
+              feedback.
+            </li>
+          </ul>
           <p>
-            <strong>Project: Scrapper</strong><br>
-            Developed an advanced web scraping tool to automatically collect specific company documents from the
-            internet. The
-            application focused on retrieving PDFs for example (ESG) Environmental, Social, and Governance data,
-            facilitating the
-            analysis of companies based on criteria like carbon emission levels below certain thresholds etc..
+            <strong>ESG Data Scraping Tool</strong><br />
+            Developed an automated ESG data-collection scraper, slashing manual
+            effort by 80% and allowing data-driven insights into metrics such as
+            carbon emissions and sustainability reporting.
           </p>
         </div>
-
-        <!-- Add more timeline events as needed -->
       </div>
     </div>
   </section>
+
   <!-- Education Section -->
   <section id="education">
     <div class="container">
       <h2>Education</h2>
       <div class="timeline">
-        <!-- Timeline Event -->
+        <!-- Timeline Event 1 -->
         <div class="timeline-event">
           <h3>Bachelor of Science in Computer Science</h3>
-          <span>Arab Academy for Science, Technology and Maritime Transport (AASTMT)</span>
-          <span>September 2018 - July 2022</span>
-        </div>
-        <div class="timeline-event">
-          <h3>Online Courses</h3>
-          <span>Udemy</span>
           <span>
+            Arab Academy for Science, Technology and Maritime Transport (AASTMT)
+          </span>
+          <span>September 2018 – July 2022 | GPA: A-</span>
+        </div>
+
+        <!-- Timeline Event 2 -->
+        <div class="timeline-event">
+          <h3>Online Courses & Certifications</h3>
+          <span>Udemy, Other Platforms</span>
+          <p>
             <a href="https://www.udemy.com/course/ultimate-csharp-masterclass/" target="_blank"
               rel="noopener noreferrer">
-              C#
-              <i class="fab fa-cuttlefish"></i>
+              C# Masterclass <i class="fab fa-cuttlefish"></i>
             </a>
-          </span>
-          <span>
+          </p>
+          <p>
             <a href="https://www.udemy.com/course/complete-angular-14-course-learn-frontend-development/learn/"
               target="_blank" rel="noopener noreferrer">
-              Angular
-              <i class="fab fa-angular"></i>
+              Angular <i class="fab fa-angular"></i>
             </a>
-          </span>
-          <span>
+          </p>
+          <p>
             <a href="https://www.udemy.com/course/net-core-with-ms-sql-beginner-to-expert/" target="_blank"
               rel="noopener noreferrer">
-              .NET
-              <i class="fas fa-server"></i>
+              .NET & MS SQL <i class="fas fa-server"></i>
             </a>
-          </span>
-
+          </p>
         </div>
-        <!-- Add more timeline events as needed -->
       </div>
     </div>
   </section>
@@ -267,25 +355,35 @@
         <button type="submit" class="btn">Send Message</button>
       </form>
       <div id="form-message"></div>
+
       <!-- Social Media Links -->
       <div class="social-links">
         <a href="https://www.linkedin.com/in/mohamedhazem789/" target="_blank"><i class="fab fa-linkedin"></i></a>
         <a href="https://github.com/firemido/" target="_blank"><i class="fab fa-github"></i></a>
-        <!-- Add more social icons as needed -->
       </div>
     </div>
   </section>
 
   <!-- Back to Top Button -->
-  <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
+  <button id="back-to-top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
 
   <!-- Footer -->
   <footer>
-
+    <p>
+      &copy; <span id="year"></span> Mohamed Hazem. All rights reserved.
+    </p>
   </footer>
 
   <!-- JavaScript -->
   <script src="js/script.js" defer></script>
+  <script src="js/cursor.js" defer></script>
+
+  <script>
+    // Dynamically set current year in footer
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 
 </html>

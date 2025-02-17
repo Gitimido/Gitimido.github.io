@@ -1,0 +1,106 @@
+/* ------------------------------------------ */
+/* CUSTOM CURSOR + BINARY TRAIL              */
+/* ------------------------------------------ */
+
+/* Force-hide system cursor on everything */
+html,
+body,
+button,
+input,
+select,
+textarea,
+label,
+a,
+* {
+    cursor: none !important;
+}
+
+/* Main Custom Cursor: Light Mode Defaults */
+#custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 25px;
+    height: 25px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s ease-out, background-color 0.2s ease;
+    z-index: 9999;
+}
+
+/* Click animation (works in both modes) */
+#custom-cursor.click-effect {
+    transform: translate(-50%, -50%) scale(0.7);
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Hover states: Light Mode */
+#custom-cursor.hover-clickable {
+    background-color: rgba(255, 165, 0, 0.6);
+    border-color: #fff;
+}
+
+#custom-cursor.hover-textfield {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: #fff;
+}
+
+/* Binary digits: Light Mode => black color */
+.cursor-binary {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    font-family: monospace;
+    color: #000;
+    pointer-events: none;
+    animation: binaryFade 0.8s forwards ease-out;
+    z-index: 9998;
+}
+
+@keyframes binaryFade {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    70% {
+        opacity: 0.8;
+        transform: translate(-50%, -60%) scale(1.2);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -80%) scale(1.3);
+    }
+}
+
+/* ------------------------------------------ */
+/* CUSTOM CURSOR DARK MODE OVERRIDES         */
+/* ------------------------------------------ */
+body.dark-mode #custom-cursor {
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 2px solid #000;
+}
+
+body.dark-mode #custom-cursor.click-effect {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+body.dark-mode #custom-cursor.hover-clickable {
+    background-color: rgba(255, 165, 0, 0.7);
+    border-color: #000;
+}
+
+body.dark-mode #custom-cursor.hover-textfield {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-color: #000;
+}
+
+body.dark-mode .cursor-binary {
+    color: #fff;
+}
