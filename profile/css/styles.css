@@ -745,7 +745,7 @@ body.dark-mode .timeline-event a:hover {
 /***********************************************
  * MOBILE RESPONSIVE STYLES (max-width: 768px)
  ***********************************************/
-@media (max-width: 768px) {
+@media (max-width: 1050px) {
 
     /* Adjust hero typography */
     #hero h2 {
