@@ -323,7 +323,6 @@ section h2::after {
     color: #2d3748;
     font-weight: 500;
 }
-
 /***********************************************
  * PROJECTS SECTION
  ***********************************************/
@@ -352,10 +351,11 @@ section h2::after {
 
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 300px));
     gap: 20px;
     width: 90%;
     margin: 0 auto;
+    justify-content: center;
 }
 
 .project-item {
@@ -397,7 +397,6 @@ section h2::after {
     margin: 10px 0;
     color: #555;
 }
-
 /***********************************************
  * EXPERIENCE & EDUCATION (TIMELINE)
  ***********************************************/
