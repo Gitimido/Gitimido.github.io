@@ -44,7 +44,7 @@ jobs:
 
       # 6) Copy ONLY your browser build into docs/
       - name: Copy browser build to docs/
-        run: cp -R docs/browser/* docs/
+        run: cp -R docs/* docs/
 
       # 7) Commit & push to production
       - name: Commit & push
