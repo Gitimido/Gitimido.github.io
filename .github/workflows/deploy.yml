@@ -1,51 +1,57 @@
-name: Build & Deploy Angular to GitHub Pages (root)
+name: Deploy Angular app to GitHub Pages root
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: write # allow this workflow to push back
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) Checkout with push permission
-      - name: Checkout repo
+      # 1) Checkout with push rights
+      - name: Checkout code
         uses: actions/checkout@v3
         with:
           persist-credentials: true
 
-      # 2) Install Node.js
+      # 2) Node.js setup
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      # 3) Install dependencies
+      # 3) Dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # 4) Build the Angular app for production
+      # 4) Production build
       - name: Build Angular app
         run: npm run build -- --configuration=production --base-href=/
 
-      # 5) Prepare the branch root for Pages
-      - name: Clean out old files
+      # 5) Clean out old files (keep only .github/)
+      - name: Clean repo root
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Delete everything except .github/ and .git/
-          find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' -exec git rm -rf {} +
+          find . -maxdepth 1 -mindepth 1 \
+            ! -name '.github' \
+            ! -name '.git' \
+            -exec git rm -rf {} +
 
-      - name: Copy build output to root
+      # 6) Copy build output into root
+      - name: Copy build to root
         run: |
-          cp -R dist/mohamedshazem/browser/* .
+          cp -R dist/mohamedshazem/* .
+          # prevent GitHub Pages from ignoring files beginning with '_'
+          touch .nojekyll
 
-      # 6) Commit & force‑push to main
+      # 7) Commit & force‑push to main
       - name: Commit & push
         run: |
           git add .
-          git commit -m "chore: deploy Angular build to Pages root" || echo "No changes to commit"
+          git commit -m "chore: deploy Angular build to Pages root" || echo "No changes"
           git push -f origin main
