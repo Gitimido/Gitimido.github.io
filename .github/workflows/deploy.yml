@@ -1,4 +1,4 @@
-name: Build & Deploy Angular to production branch
+name: Build & Deploy to GitHub Pages (docs/)
 
 on:
   push:
@@ -12,26 +12,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          persist-credentials: true # <— allow pushes
+          persist-credentials: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Install dependencies
-        run: npm install
+      - run: npm install
 
-      - name: Build Angular app
-        run: npm run build -- --configuration=production --base-href=/
+      - run: npm run build -- --configuration=production --base-href=/
 
-      - name: Deploy to production branch
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: production
-          publish_dir: ./dist/mohamedshazem
-          allow_empty_commit: true
+      - name: Deploy built app to docs/
+        run: |
+          rm -rf docs
+          mv dist/mohamedshazem docs
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "chore: update docs for Pages" || echo "No changes"
+          git push
