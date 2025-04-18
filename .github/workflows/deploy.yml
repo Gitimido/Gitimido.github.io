@@ -1,8 +1,8 @@
-name: Build & Deploy to production/docs (no stray browser/)
+name: Build & Deploy to production/docs
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
       - name: Install dependencies
         run: npm ci
 
@@ -41,15 +41,7 @@ jobs:
           mkdir -p docs
           rm -rf docs/*
 
-      # 6) DEBUG: show dist and docs content
-      - name: Debug: list dist & docs
-        run: |
-          echo "---- dist/mohamedshazem/browser ----"
-          ls -R dist/mohamedshazem/browser || echo "(nothing here)"
-          echo "---- docs/ ----"
-          ls -R docs || echo "(nothing here)"
-
-      # 7) Copy only the browser build into docs/
+      # 6) Copy only the browser build into docs/
       - name: Copy browser build to docs/
         run: |
           cp -R dist/mohamedshazem/browser/* docs/
