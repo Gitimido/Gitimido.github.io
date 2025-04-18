@@ -1,4 +1,4 @@
-name: Build & Deploy Angular + Profile to production/docs
+name: Build & Deploy to production/docs (with profile)
 
 on:
   push:
@@ -9,18 +9,18 @@ permissions:
   contents: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout main so we can build and grab profile/
+      # 1) Checkout main (full history so we can grab profile/)
       - name: Checkout main
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Node.js setup & install dependencies
+      # 2) Install Node.js & dependencies
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -28,44 +28,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 3) Build Angular into a clean 'build/' folder
+      # 3) Build Angular (into dist/mohamedshazem/browser/)
       - name: Build Angular app
-        run: npm run build -- --configuration=production --base-href=/ --output-path=build
+        run: npm run build -- --configuration=production --base-href=/
 
-      # 4) Backup the profile/ folder from main
-      - name: Backup profile folder
+      # 4) Back up your profile folder from main
+      - name: Backup profile
         run: |
           rm -rf /tmp/profile-backup
           cp -R profile /tmp/profile-backup
 
-      # 5) Switch to your existing production branch
+      # 5) Switch to production branch
       - name: Checkout production
         run: git checkout production
 
-      # 6) Prepare docs/build and docs/profile directories
-      - name: Prepare docs/ subfolders
+      # 6) Prepare docs/ (delete everything inside)
+      - name: Clean docs/
         run: |
-          mkdir -p docs/build
-          mkdir -p docs/profile
-          rm -rf docs/build/*
-          rm -rf docs/profile/*
+          mkdir -p docs
+          rm -rf docs/*
 
-      # 7) Copy the new Angular build into docs/build/
-      - name: Deploy build into docs/build/
+      # 7) Copy only the browser build into docs/
+      - name: Copy browser build to docs/
         run: |
-          cp -R build/* docs/build/
-          rm -rf build
+          cp -R dist/mohamedshazem/browser/* docs/
 
       # 8) Restore profile into docs/profile/
-      - name: Restore profile into docs/profile/
-        run: cp -R /tmp/profile-backup/* docs/profile/
+      - name: Restore profile to docs/profile/
+        run: |
+          mkdir -p docs/profile
+          cp -R /tmp/profile-backup/* docs/profile/
 
       # 9) Disable Jekyll
       - name: Touch .nojekyll
         run: touch docs/.nojekyll
 
       # 10) Commit & force‑push to production
-      - name: Commit & push to production
+      - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
