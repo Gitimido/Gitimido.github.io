@@ -3,12 +3,11 @@ import { OpenAppService } from 'src/app/Services/open-app.service';
 import { AppsService } from 'src/app/Services/apps.service';
 import { IApps } from 'src/app/Interface/IApps';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-taskbar',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './taskbar.component.html',
   styleUrl: './taskbar.component.scss',
 })
