@@ -1,9 +1,8 @@
-name: Build & Deploy to production/docs (preserve profile)
+name: Build & Deploy to production/docs (no browser/)
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: write
@@ -13,53 +12,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout your main branch (full history)
-      - name: Checkout main
-        uses: actions/checkout@v3
+      # 1. Checkout main
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Install Node.js & dependencies
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-      - name: Install dependencies
-        run: npm ci
+      # 2. Setup Node & install deps
+      - uses: actions/setup-node@v3
+        with: { node-version: "18" }
+      - run: npm ci
 
-      # 3) Build Angular into a temp folder
-      - name: Build Angular app
-        run: npm run build -- --configuration=production --base-href=/ --output-path=build
+      # 3. Build into docs/
+      - name: Build Angular into docs/
+        run: npm run build -- --configuration=production --base-href=/ --output-path=docs
 
-      # 4) Switch to production branch
+      # 4. Switch to production branch
       - name: Checkout production
         run: git checkout production
 
-      # 5) Ensure docs/ exists
+      # 4.1. Remove old top‑level junk
+      - name: Remove old browser/ and node_modules/
+        run: rm -rf browser node_modules
+
+      # 5. Ensure docs/ exists
       - name: Ensure docs directory
         run: mkdir -p docs
 
-      # 6) Clean out old Angular files in docs/ but keep profile/
+      # 6. Clean old Angular files in docs/, keep profile/
       - name: Clean old docs content
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           find docs/ -mindepth 1 -maxdepth 1 \
             ! -name 'profile' \
             ! -name '.nojekyll' \
             -exec rm -rf {} +
 
-      # 7) Copy new build into docs/
-      - name: Deploy build into docs
-        run: |
-          cp -R build/* docs/
-          rm -rf build
-          touch docs/.nojekyll
-
-      # 8) Commit and push production
-      - name: Commit & push to production
+      # 7. Commit & push
+      - name: Commit & push docs/
         run: |
           git add docs
-          git commit -m "ci: deploy Angular build to docs/" || echo "No changes to commit"
+          git commit -m "ci: deploy Angular build to docs/ (no browser/)" || echo "No changes"
           git push -f origin production
