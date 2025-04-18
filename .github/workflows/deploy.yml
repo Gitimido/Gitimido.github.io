@@ -6,18 +6,18 @@ on:
       - main
 
 permissions:
-  contents: write # allow pushing back to production
+  contents: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout your repo (fetch all history & branches)
+      # 1) Checkout main (with full history so we can switch branches)
       - name: Checkout main
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # so we can checkout other branches
+          fetch-depth: 0
           persist-credentials: true
 
       # 2) Install Node.js & dependencies
@@ -28,34 +28,40 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 3) Build Angular into "build/"
+      # 3) Build the Angular app (browser output)
       - name: Build Angular app
-        run: npm run build -- --configuration=production --base-href=/ --output-path=build
+        run: npm run build -- --configuration=production --base-href=/
 
       # 4) Switch to production branch
       - name: Checkout production
         run: git checkout production
 
-      # 5) Remove only the old Angular artifacts
-      - name: Clean Angular output
+      # 5) Remove _all_ tracked files except .github/ and profile/
+      - name: Clean production branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          rm -f index.html
-          rm -f runtime.*.js polyfills.*.js main.*.js styles.*.css vendor.*.js
-          rm -rf assets
-          rm -f .nojekyll
+          # Remove everything tracked except workflows and profile
+          git ls-files \
+            | grep -v '^\.github/' \
+            | grep -v '^profile/' \
+            | xargs -r git rm -rf
+          # Also delete any untracked items at root except .github and profile
+          find . -maxdepth 1 -mindepth 1 \
+            ! -name '.github' \
+            ! -name '.git' \
+            ! -name 'profile' \
+            -exec rm -rf {} +
 
-      # 6) Copy new build into production root
-      - name: Deploy build to production
+      # 6) Copy the new browser build into the root
+      - name: Deploy build to root
         run: |
-          cp -R build/* .
-          rm -rf build
+          cp -R dist/mohamedshazem/browser/* .
           touch .nojekyll
 
-      # 7) Commit & force‑push back to production
+      # 7) Commit & force‑push production
       - name: Commit & push
         run: |
           git add .
-          git commit -m "ci: deploy Angular build to production branch" || echo "No changes to commit"
+          git commit -m "ci: deploy fresh Angular build to production" || echo "No changes"
           git push -f origin production
