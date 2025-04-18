@@ -1,9 +1,10 @@
-name: Build & Deploy to GitHub Pages (docs/)
+name: Build & Deploy Angular to GitHub Pages (docs/)
 
 on:
   push:
     branches: [main]
 
+# Allow this workflow to push back to the repo
 permissions:
   contents: write
 
@@ -12,24 +13,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      # 1) Checkout code, with permission to push
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           persist-credentials: true
 
-      - uses: actions/setup-node@v3
+      # 2) Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - run: npm install
+      # 3) Install dependencies
+      - name: Install dependencies
+        run: npm install
 
-      - run: npm run build -- --configuration=production --base-href=/
+      # 4) Build Angular app for production
+      - name: Build Angular app
+        run: npm run build -- --configuration=production --base-href=/
 
-      - name: Deploy built app to docs/
+      # 5) Prepare docs/ folder
+      - name: Flatten build into docs/
         run: |
           rm -rf docs
-          mv dist/mohamedshazem docs
+          mkdir docs
+          cp -R dist/mohamedshazem/browser/* docs/
+
+      # 6) Commit & push docs/ back to main
+      - name: Commit & push docs
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git commit -m "chore: update docs for Pages" || echo "No changes"
+          git commit -m "chore: publish build to docs/" || echo "No changes to commit"
           git push
