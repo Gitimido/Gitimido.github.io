@@ -5,20 +5,20 @@ on:
     branches: [main]
 
 permissions:
-  contents: write # allow pushes back to the repo
+  contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout with write permission
+      # 1) Checkout with push rights
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           persist-credentials: true
 
-      # 2) Install Node.js
+      # 2) Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -32,29 +32,28 @@ jobs:
       - name: Build Angular production bundle
         run: npm run build -- --configuration=production --base-href=/
 
-      # 5) Remove old files (keep only .github/ and .git/)
+      # 5) Clean out old files (keep only .github/ and .git/)
       - name: Clean repo root
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # remove all tracked files except workflows
           git ls-files | grep -v '^\.github/' | xargs -r git rm -rf
-          # remove any leftover untracked files/folders except .github and .git
+          # remove any other files/folders at root
           find . -maxdepth 1 -mindepth 1 \
             ! -name '.github' \
             ! -name '.git' \
             -exec rm -rf {} +
 
-      # 6) Copy the new build into the repo root
-      - name: Copy build output into root
+      # 6) Copy your build output into the root
+      - name: Copy build to root
         run: |
-          cp -R dist/mohamedshazem/browser/* .
-          # prevent Jekyll from ignoring files that start with _
+          cp -R dist/mohamedshazem/* .
           touch .nojekyll
 
-      # 7) Commit & force‑push back to main
+      # 7) Commit & force‑push to main
       - name: Commit & push
         run: |
           git add .
-          git commit -m "chore: deploy Angular build to Pages root" || echo "No changes to commit"
+          git commit -m "chore: deploy Angular build to Pages root" || echo "Nothing to commit"
           git push -f origin main
