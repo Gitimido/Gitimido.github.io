@@ -1,0 +1,36 @@
+<div class="bootup-container" [ngClass]="{'fade-out': startAnimationComplete}">
+    <div class="logo-container">
+        <div class="logo">
+            <div class="spinner-container">
+                <div class="circular-progress">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="progress-circle outer" cx="50" cy="50" r="45"></circle>
+                        <circle class="progress-circle middle" cx="50" cy="50" r="35"></circle>
+                        <circle class="progress-circle inner" cx="50" cy="50" r="25"></circle>
+                    </svg>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-text">
+            <h1>Mohamed Hazem</h1>
+
+            <div class="loading-status">
+                <span class="status-text">Loading</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="loadingProgress"></div>
+                </div>
+                <span class="percentage">{{ loadingProgress }}%</span>
+            </div>
+
+            <div class="status-message">{{ currentStatusMessage }}</div>
+        </div>
+    </div>
+
+    <div class="start-button-container" [ngClass]="{'visible': showStartButton}">
+        <button class="start-button" (click)="startDesktop()">
+            Start
+        </button>
+    </div>
+</div>

@@ -1,0 +1,460 @@
+$primary-blue: #1e3a8a;
+$accent-blue: #3b82f6;
+$primary-purple: #7e22ce;
+$accent-purple: #a855f7;
+$neon-purple: #d946ef;
+$dark-bg: #0f172a;
+$darker-bg: #060b19;
+$glass-bg: rgba(15, 23, 42, 0.8);
+$glass-border: rgba(255, 255, 255, 0.1);
+$text-primary: #f8fafc;
+$bg-color: #0f172a;
+
+// Modern SOTA Bootup Screen Styles
+.bootup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: $darker-bg;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  // Ambient background effects
+  &::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(
+      circle at center,
+      rgba($accent-purple, 0.03) 0%,
+      rgba($primary-blue, 0.02) 25%,
+      rgba($darker-bg, 0) 70%
+    );
+    animation: rotate 45s linear infinite;
+    z-index: -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(
+        90deg,
+        rgba($neon-purple, 0.02) 1px,
+        transparent 1px
+      ),
+      linear-gradient(rgba($neon-purple, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -1;
+    opacity: 0.3;
+    animation: backgroundFade 8s ease-in-out infinite alternate;
+  }
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.logo {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+// Modern high-tech spinner
+.spinner-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+
+  // Glow effect behind spinner
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(
+      circle at center,
+      rgba($accent-blue, 0.2) 0%,
+      rgba($accent-purple, 0.1) 40%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    filter: blur(15px);
+    opacity: 0.7;
+    animation: pulseGlow 4s ease-in-out infinite;
+  }
+}
+
+.circular-progress {
+  position: absolute;
+  inset: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform-origin: center;
+    overflow: visible;
+
+    .progress-circle {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      transform-origin: center;
+
+      &.outer {
+        stroke: rgba($accent-blue, 0.8);
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        animation: progressCircle 3s ease-out forwards,
+          rotateOuter 8s linear infinite;
+        filter: drop-shadow(0 0 5px rgba($accent-blue, 0.7));
+      }
+
+      &.middle {
+        stroke: rgba($accent-purple, 0.8);
+        stroke-dasharray: 220;
+        stroke-dashoffset: 220;
+        animation: progressCircle 2.5s ease-out forwards,
+          rotateMiddle 6s linear infinite;
+        filter: drop-shadow(0 0 4px rgba($accent-purple, 0.7));
+      }
+
+      &.inner {
+        stroke: rgba($neon-purple, 0.8);
+        stroke-dasharray: 157;
+        stroke-dashoffset: 157;
+        animation: progressCircle 2s ease-out forwards,
+          rotateInner 4s linear infinite;
+        filter: drop-shadow(0 0 3px rgba($neon-purple, 0.7));
+      }
+    }
+  }
+}
+
+.loading-text {
+  position: relative;
+  text-align: center;
+  color: $text-primary;
+
+  h1 {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    position: relative;
+    text-transform: uppercase;
+    animation: fadeIn 1s ease-in forwards;
+
+    // Glow effect
+    text-shadow: 0 0 10px rgba($accent-blue, 0.5);
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        rgba($accent-purple, 0.3),
+        rgba($neon-purple, 0.8),
+        rgba($accent-purple, 0.3)
+      );
+      border-radius: 2px;
+    }
+  }
+}
+
+.loading-status {
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0.9;
+
+  .status-text {
+    min-width: 80px;
+    text-align: right;
+  }
+
+  .progress-bar {
+    width: 120px;
+    height: 4px;
+    background: rgba($text-primary, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+
+    .progress-fill {
+      position: absolute;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, $accent-blue, $neon-purple);
+      box-shadow: 0 0 8px rgba($neon-purple, 0.5);
+      transition: width 0.3s ease-out;
+    }
+  }
+
+  .percentage {
+    min-width: 40px;
+    text-align: left;
+  }
+}
+
+.status-message {
+  margin-top: 15px;
+  font-size: 14px;
+  opacity: 0.7;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  height: 20px;
+
+  &.ready {
+    color: $neon-purple;
+    font-weight: 500;
+    opacity: 1;
+    text-shadow: 0 0 8px rgba($neon-purple, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+    font-style: normal;
+  }
+}
+
+.start-button-container {
+  margin-top: 60px;
+  height: 50px; /* Set a fixed height for the container */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in, visibility 0.5s;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.start-button {
+  background: rgba($primary-blue, 0.3);
+  color: $text-primary;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 35px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 0 15px rgba($primary-blue, 0.3),
+    inset 0 0 10px rgba($accent-blue, 0.2);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba($neon-purple, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
+
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      rgba($primary-blue, 0.6),
+      rgba($accent-purple, 0.6)
+    );
+    box-shadow: 0 0 20px rgba($neon-purple, 0.4),
+      inset 0 0 15px rgba($accent-blue, 0.3);
+    transform: translateY(-2px);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    background: rgba($primary-blue, 0.7);
+  }
+}
+
+// Animations
+@keyframes progressCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rotateOuter {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotateMiddle {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes rotateInner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes backgroundFade {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.4;
+  }
+}
+
+// Media Queries for Responsiveness
+@media (max-width: 768px) {
+  .bootup-container {
+    padding: 0 20px;
+  }
+
+  .logo {
+    width: 140px;
+    height: 140px;
+  }
+
+  .spinner-container {
+    width: 120px;
+    height: 120px;
+  }
+
+  .loading-text h1 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    width: 120px;
+    height: 120px;
+  }
+
+  .spinner-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  .loading-text h1 {
+    font-size: 24px;
+  }
+
+  .loading-status .progress-bar {
+    width: 100px;
+  }
+}
+@media (max-width: 768px) {
+  .logo-container {
+    padding: 0 20px;
+    transform: translate(-8%, -5%); /* Small shift left and up */
+  }
+
+  .start-button-container {
+    padding: 0 20px;
+    transform: translate(-20%, -5%); /* Small shift left and up */
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-container {
+    padding: 0 15px;
+    transform: translate(-8%, -5%); /* Small shift left and up */
+  }
+  .start-button-container {
+    padding: 0 20px;
+    transform: translate(-20%, -5%); /* Small shift left and up */
+  }
+}

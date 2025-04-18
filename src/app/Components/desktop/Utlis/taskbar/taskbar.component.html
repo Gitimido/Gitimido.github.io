@@ -1,0 +1,21 @@
+<div class="taskbar">
+    <div class="start-button" (click)="toggleStartMenu()">Start</div>
+    <div class="open-apps" style="display: flex; justify-content: flex-start; gap: 10px; padding-left: 10px;">
+        @for (app of openApps; track app.appId) {
+        <div class="taskbar-app" [ngClass]="{'minimized': app.status === 'minimized', 'active': app.status === 'open'}"
+            (click)="toggleAppWindow(app.appId)">
+            <span class="material-icons taskbar-app-icon">{{ app.icon }}</span>
+        </div>
+        }
+    </div>
+
+    <div #clockRef class="clock"></div>
+</div>
+<div #startMenuRef class="start-menu">
+    @for (app of appsList; track $index) {
+    <div class="start-menu-item" (click)="onStartMenuItemClick(app.appId)">
+        <span class="material-icons start-menu-icon">{{ app.icon }}</span>
+        {{ app.appId }}
+    </div>
+    }
+</div>
