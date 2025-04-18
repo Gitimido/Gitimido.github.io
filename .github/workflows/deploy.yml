@@ -1,4 +1,4 @@
-name: Build & Deploy to production/docs (preserve profile)
+name: Build & Deploy Angular to production/docs (preserve profile)
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Setup Node.js and install deps
+      # 2) Setup Node.js & install dependencies
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -32,27 +32,32 @@ jobs:
       - name: Build Angular app
         run: npm run build -- --configuration=production --base-href=/ --output-path=build
 
-      # 4) Switch to your existing production branch
+      # 4) Checkout your production branch
       - name: Checkout production
         run: git checkout production
 
-      # 5) Clean out old files in docs/, except profile/
-      - name: Clean old Angular output
+      # 5) Ensure docs/ exists
+      - name: Ensure docs/ directory
+        run: mkdir -p docs
+
+      # 6) Clean out old docs content except profile/
+      - name: Clean old docs content
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # remove everything in docs/ except profile/
           find docs/ -mindepth 1 -maxdepth 1 \
             ! -name 'profile' \
             -exec rm -rf {} +
 
-      # 6) Copy the new build into docs/
-      - name: Deploy build into docs/
+      # 7) Copy the fresh build into docs/
+      - name: Deploy build to docs/
         run: |
           cp -R build/* docs/
           rm -rf build
           touch docs/.nojekyll
 
-      # 7) Commit & force‑push to production
+      # 8) Commit & force-push production
       - name: Commit & push to production
         run: |
           git add docs
