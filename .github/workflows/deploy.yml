@@ -40,7 +40,7 @@ jobs:
       - name: Prepare docs/
         run: |
           mkdir -p docs
-          rm -rf docs/*
+          rm -rf docs/
 
       # 6) Copy ONLY your browser build into docs/
       - name: Copy browser build to docs/
