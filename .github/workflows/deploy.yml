@@ -1,56 +1,61 @@
-name: Deploy Angular build to Pages root (preserve profile/)
+name: Build & Deploy to production branch
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: write # allow pushing back to production
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout with push rights
-      - name: Checkout code
+      # 1) Checkout your repo (fetch all history & branches)
+      - name: Checkout main
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0 # so we can checkout other branches
           persist-credentials: true
 
-      # 2) Install Node.js
+      # 2) Install Node.js & dependencies
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-
-      # 3) Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4) Build Angular into a temp folder called "build"
+      # 3) Build Angular into "build/"
       - name: Build Angular app
         run: npm run build -- --configuration=production --base-href=/ --output-path=build
 
-      # 5) Remove only the old Angular artifacts (preserve profile/, .github/, etc.)
-      - name: Clean previous build artifacts
+      # 4) Switch to production branch
+      - name: Checkout production
+        run: git checkout production
+
+      # 5) Remove only the old Angular artifacts
+      - name: Clean Angular output
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          rm -f index.html runtime.*.js polyfills.*.js main.*.js styles.*.css vendor.*.js
+          rm -f index.html
+          rm -f runtime.*.js polyfills.*.js main.*.js styles.*.css vendor.*.js
           rm -rf assets
           rm -f .nojekyll
 
-      # 6) Copy the new build into the repo root
-      - name: Deploy build to root
+      # 6) Copy new build into production root
+      - name: Deploy build to production
         run: |
           cp -R build/* .
           rm -rf build
           touch .nojekyll
 
-      # 7) Commit & force‑push back to main
-      - name: Commit & push to main
+      # 7) Commit & force‑push back to production
+      - name: Commit & push
         run: |
           git add .
-          git commit -m "ci: deploy fresh Angular build" || echo "No changes to commit"
-          git push -f origin main
+          git commit -m "ci: deploy Angular build to production branch" || echo "No changes to commit"
+          git push -f origin production
