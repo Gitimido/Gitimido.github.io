@@ -1,57 +1,60 @@
-name: Deploy Angular app to GitHub Pages root
+name: Deploy Angular to GitHub Pages root
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: write # allow this workflow to push back
+  contents: write # allow pushes back to the repo
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout with push rights
+      # 1) Checkout with write permission
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           persist-credentials: true
 
-      # 2) Node.js setup
+      # 2) Install Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      # 3) Dependencies
+      # 3) Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4) Production build
-      - name: Build Angular app
+      # 4) Build the Angular app
+      - name: Build Angular production bundle
         run: npm run build -- --configuration=production --base-href=/
 
-      # 5) Clean out old files (keep only .github/)
+      # 5) Remove old files (keep only .github/ and .git/)
       - name: Clean repo root
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # remove all tracked files except workflows
+          git ls-files | grep -v '^\.github/' | xargs -r git rm -rf
+          # remove any leftover untracked files/folders except .github and .git
           find . -maxdepth 1 -mindepth 1 \
             ! -name '.github' \
             ! -name '.git' \
-            -exec git rm -rf {} +
+            -exec rm -rf {} +
 
-      # 6) Copy build output into root
-      - name: Copy build to root
+      # 6) Copy the new build into the repo root
+      - name: Copy build output into root
         run: |
-          cp -R dist/mohamedshazem/* .
-          # prevent GitHub Pages from ignoring files beginning with '_'
+          cp -R dist/mohamedshazem/browser/* .
+          # prevent Jekyll from ignoring files that start with _
           touch .nojekyll
 
-      # 7) Commit & force‑push to main
+      # 7) Commit & force‑push back to main
       - name: Commit & push
         run: |
           git add .
-          git commit -m "chore: deploy Angular build to Pages root" || echo "No changes"
+          git commit -m "chore: deploy Angular build to Pages root" || echo "No changes to commit"
           git push -f origin main
