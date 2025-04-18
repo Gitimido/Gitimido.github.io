@@ -1,4 +1,4 @@
-name: Deploy Angular to GitHub Pages root
+name: Deploy Angular build to Pages root (preserve profile/)
 
 on:
   push:
@@ -18,42 +18,42 @@ jobs:
         with:
           persist-credentials: true
 
-      # 2) Setup Node.js
-      - name: Setup Node.js
+      # 2) Set up Node and install deps
+      - name: Setup Node.js & Install dependencies
         uses: actions/setup-node@v3
         with:
           node-version: "18"
+      - run: npm ci
 
-      # 3) Install dependencies
-      - name: Install dependencies
-        run: npm ci
+      # 3) Build Angular into a temp folder
+      - name: Build Angular app
+        run: npm run build -- --configuration=production --base-href=/ --output-path=build
 
-      # 4) Build the Angular app
-      - name: Build Angular production bundle
-        run: npm run build -- --configuration=production --base-href=/
-
-      # 5) Clean out old files (keep only .github/ and .git/)
-      - name: Clean repo root
+      # 4) Remove only the old Angular artifacts (keep profile/, workflows, etc.)
+      - name: Clean previous build artifacts
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # remove all tracked files except workflows
-          git ls-files | grep -v '^\.github/' | xargs -r git rm -rf
-          # remove any other files/folders at root
-          find . -maxdepth 1 -mindepth 1 \
-            ! -name '.github' \
-            ! -name '.git' \
-            -exec rm -rf {} +
+          # remove tracked build files
+          rm -f index.html
+          rm -f runtime.*.js
+          rm -f polyfills.*.js
+          rm -f main.*.js
+          rm -f styles.*.css
+          rm -f vendor.*.js
+          rm -rf assets
+          rm -f .nojekyll
 
-      # 6) Copy your build output into the root
-      - name: Copy build to root
+      # 5) Copy the new build into your repo root
+      - name: Deploy build to repo root
         run: |
-          cp -R dist/mohamedshazem/* .
+          cp -R build/* .
+          rm -rf build
           touch .nojekyll
 
-      # 7) Commit & force‑push to main
-      - name: Commit & push
+      # 6) Commit & force‑push to main
+      - name: Commit & push to main
         run: |
           git add .
-          git commit -m "chore: deploy Angular build to Pages root" || echo "Nothing to commit"
+          git commit -m "ci: deploy fresh Angular build" || echo "Nothing to commit"
           git push -f origin main
