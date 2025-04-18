@@ -1,9 +1,8 @@
-name: Build & Deploy to production/docs (debug)
+name: Build & Deploy to production/docs (no stray browser/)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -13,22 +12,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout main (full history so we can switch branches)
+      # 1) Checkout main (full history)
       - name: Checkout main
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Setup Node.js & install deps
+      # 2) Set up Node.js & install deps
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: '18'
       - name: Install dependencies
         run: npm ci
 
-      # 3) Build Angular into dist/mohamedshazem/
+      # 3) Build Angular (outputs to dist/mohamedshazem/browser/)
       - name: Build Angular app
         run: npm run build -- --configuration=production --base-href=/
 
@@ -36,33 +35,31 @@ jobs:
       - name: Checkout production
         run: git checkout production
 
-      # 5) Ensure docs/ exists and clean it out
-      - name: Prepare docs/
+      # 5) Prepare docs/ (delete everything inside)
+      - name: Clean docs/
         run: |
           mkdir -p docs
           rm -rf docs/*
 
-      # 5.1) DEBUG: list key directories
-      - name: Debug: list folder contents
+      # 6) DEBUG: show dist and docs content
+      - name: Debug: list dist & docs
         run: |
-          echo "=== Workspace root ==="
-          ls -R .
-          echo
-          echo "=== dist/mohamedshazem/ ==="
-          ls -R dist/mohamedshazem || echo "(dist/mohamedshazem/ not found)"
-          echo
-          echo "=== docs/ ==="
-          ls -R docs || echo "(docs/ not found)"
+          echo "---- dist/mohamedshazem/browser ----"
+          ls -R dist/mohamedshazem/browser || echo "(nothing here)"
+          echo "---- docs/ ----"
+          ls -R docs || echo "(nothing here)"
 
-      # 6) Copy the build output into docs/
-      - name: Copy build to docs/
-        run: cp -R dist/mohamedshazem/* docs/
+      # 7) Copy only the browser build into docs/
+      - name: Copy browser build to docs/
+        run: |
+          cp -R dist/mohamedshazem/browser/* docs/
+          touch docs/.nojekyll
 
-      # 7) Commit & force‑push to production
+      # 8) Commit & force‑push to production
       - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git commit -m "ci: deploy Angular build to docs/" || echo "No changes to commit"
+          git commit -m "ci: deploy Angular browser build to docs/" || echo "No changes to commit"
           git push -f origin production
