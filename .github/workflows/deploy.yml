@@ -1,4 +1,4 @@
-name: Build & Deploy to production/docs (copy from browser)
+name: Build & Deploy to production/docs (debug)
 
 on:
   push:
@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout main
+      # 1) Checkout main (full history so we can switch branches)
       - name: Checkout main
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Install Node and dependencies
+      # 2) Setup Node.js & install deps
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 3) Build Angular (default output → dist/mohamedshazem/browser)
+      # 3) Build Angular into dist/mohamedshazem/
       - name: Build Angular app
         run: npm run build -- --configuration=production --base-href=/
 
@@ -40,17 +40,29 @@ jobs:
       - name: Prepare docs/
         run: |
           mkdir -p docs
-          rm -rf docs/
+          rm -rf docs/*
 
-      # 6) Copy ONLY your browser build into docs/
-      - name: Copy browser build to docs/
-        run: cp -R docs/browser/ docs/
+      # 5.1) DEBUG: list key directories
+      - name: Debug: list folder contents
+        run: |
+          echo "=== Workspace root ==="
+          ls -R .
+          echo
+          echo "=== dist/mohamedshazem/ ==="
+          ls -R dist/mohamedshazem || echo "(dist/mohamedshazem/ not found)"
+          echo
+          echo "=== docs/ ==="
+          ls -R docs || echo "(docs/ not found)"
 
-      # 7) Commit & push to production
+      # 6) Copy the build output into docs/
+      - name: Copy build to docs/
+        run: cp -R dist/mohamedshazem/* docs/
+
+      # 7) Commit & force‑push to production
       - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs
-          git commit -m "ci: deploy from browser/ into docs/" || echo "No changes"
+          git commit -m "ci: deploy Angular build to docs/" || echo "No changes to commit"
           git push -f origin production
