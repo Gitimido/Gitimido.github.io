@@ -1,4 +1,4 @@
-name: Build & Deploy to production/docs/build (preserve other docs)
+name: Build & Deploy to production/docs (copy from browser)
 
 on:
   push:
@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout main (full history so we can switch branches)
+      # 1) Checkout main
       - name: Checkout main
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           persist-credentials: true
 
-      # 2) Node.js setup & install deps
+      # 2) Install Node and dependencies
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -28,33 +28,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 3) Build Angular into a temp folder "build/"
+      # 3) Build Angular (default output → dist/mohamedshazem/browser)
       - name: Build Angular app
-        run: npm run build -- --configuration=production --base-href=/ --output-path=build
+        run: npm run build -- --configuration=production --base-href=/
 
       # 4) Switch to production branch
       - name: Checkout production
         run: git checkout production
 
-      # 5) Ensure docs/build exists
-      - name: Prepare docs/build directory
-        run: mkdir -p docs/build
-
-      # 6) Clean old build artifacts from docs/build (preserve other docs/*)
-      - name: Clean old build
-        run: rm -rf docs/build/*
-
-      # 7) Copy the fresh build into docs/build
-      - name: Deploy new build
+      # 5) Ensure docs/ exists and clean it out
+      - name: Prepare docs/
         run: |
-          cp -R build/* docs/build/
-          rm -rf build
+          mkdir -p docs
+          rm -rf docs/*
 
-      # 8) Commit & force‑push to production
+      # 6) Copy ONLY your browser build into docs/
+      - name: Copy browser build to docs/
+        run: cp -R dist/mohamedshazem/browser/* docs/
+
+      # 7) Commit & push to production
       - name: Commit & push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/build
-          git commit -m "ci: deploy Angular build to docs/build" || echo "No changes to commit"
+          git add docs
+          git commit -m "ci: deploy from browser/ into docs/" || echo "No changes"
           git push -f origin production
