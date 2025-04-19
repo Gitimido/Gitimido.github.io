@@ -16,9 +16,8 @@ export class TaskbarComponent implements OnInit {
   startMenuRef!: ElementRef<HTMLDivElement>;
   @ViewChild('clockRef', { static: true })
   clockRef!: ElementRef<HTMLDivElement>;
+
   appsList: IApps[] = [];
-  openWindows: { [key: string]: HTMLElement } = {};
-  windowZIndex = 10;
   openApps: IApps[] = [];
 
   constructor(
@@ -30,93 +29,70 @@ export class TaskbarComponent implements OnInit {
     this.updateClock();
     setInterval(() => this.updateClock(), 1000);
 
+    /* Subscribe to the canonical store -----------------------------------*/
     this.appsService.appsList$.subscribe((apps) => {
       this.appsList = apps;
-      this.openApps = this.appsList.filter(
+      this.openApps = apps.filter(
         (app) => app.status === 'open' || app.status === 'minimized'
       );
     });
 
-    // Subscribe to the openApp$ observable
+    /* React to “open app” command ----------------------------------------*/
     this.openAppService.openApp$.subscribe((appId) => {
       this.handleAppOpen(appId);
     });
   }
 
-  // Handle opening apps
+  /*──────────────────────── helper methods ───────────────────────*/
+
   handleAppOpen(appId: string): void {
     const appIndex = this.appsList.findIndex((app) => app.appId === appId);
+    if (appIndex === -1) return;
 
-    if (appIndex !== -1) {
-      // If app is already in openApps list
-      const openAppIndex = this.openApps.findIndex(
-        (app) => app.appId === appId
-      );
+    const isAlreadyOpen = this.openApps.some((a) => a.appId === appId);
 
-      if (openAppIndex !== -1) {
-        // App is already open, toggle between minimized and open
-
+    if (isAlreadyOpen) {
+      /* toggle minimise / restore */
+      const nextStatus =
         this.appsService.getAppStatus(appId) === 'minimized'
-          ? this.appsService.updateStatus(appId, 'open')
-          : this.appsService.updateStatus(appId, 'minimized');
-      } else {
-        const appToOpen = { ...this.appsList[appIndex], status: 'open' };
-        this.openApps.push(appToOpen);
-      }
-
-      // Update the app status in the main appsList
-      this.appsList[appIndex].status =
-        this.openApps.find((app) => app.appId === appId)?.status || 'closed';
+          ? 'open'
+          : 'minimized';
+      this.appsService.updateStatus(appId, nextStatus);
+    } else {
+      /* first‑time open */
+      this.appsService.updateStatus(appId, 'open');
     }
   }
 
-  // Toggle app window (open or minimize)
   toggleAppWindow(appId: string): void {
-    const appIndex = this.openApps.findIndex((app) => app.appId === appId);
+    const openApp = this.openApps.find((a) => a.appId === appId);
+    if (!openApp) return;
 
-    if (appIndex !== -1) {
-      // Toggle the status between 'open' and 'minimized'
-      this.openApps[appIndex].status =
-        this.openApps[appIndex].status === 'open' ? 'minimized' : 'open';
-
-      // Update the status in the main appsList as well
-      const mainAppIndex = this.appsList.findIndex(
-        (app) => app.appId === appId
-      );
-      if (mainAppIndex !== -1) {
-        this.appsList[mainAppIndex].status = this.openApps[appIndex].status;
-      }
-
-      // Notify the service about the status change
-      this.openAppService.updateAppStatus(
-        appId,
-        this.openApps[appIndex].status
-      );
-    }
+    const nextStatus = openApp.status === 'open' ? 'minimized' : 'open';
+    this.appsService.updateStatus(appId, nextStatus);
   }
 
-  // Start Menu
+  /* Start‑menu helpers */
+
   toggleStartMenu() {
-    const startMenu = this.startMenuRef?.nativeElement;
-    if (!startMenu) return;
-    startMenu.classList.toggle('active');
-  }
-
-  updateClock(): void {
-    const now = new Date();
-    if (this.clockRef?.nativeElement) {
-      const timeString = now.toLocaleTimeString();
-      const dateString = now.toLocaleDateString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      });
-      this.clockRef.nativeElement.textContent = `${timeString} • ${dateString}`;
-    }
+    this.startMenuRef.nativeElement.classList.toggle('active');
   }
 
   onStartMenuItemClick(appId: string) {
-    this.openAppService.openApp(appId); // Emits app ID to the observable
-    this.toggleStartMenu(); // Close the start menu after selecting an app
+    this.openAppService.openApp(appId);
+    this.toggleStartMenu();
+  }
+
+  /* Clock */
+
+  private updateClock(): void {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    const dateString = now.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+    this.clockRef.nativeElement.textContent = `${timeString} • ${dateString}`;
   }
 }

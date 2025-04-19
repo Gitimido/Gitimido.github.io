@@ -11,6 +11,7 @@ import { OpenAppService } from 'src/app/Services/open-app.service';
 import { FrameComponent } from './Utlis/frame/frame.component';
 import { AppsService } from 'src/app/Services/apps.service';
 import { IApps } from 'src/app/Interface/IApps';
+
 @Component({
   selector: 'app-desktop',
   standalone: true,
@@ -20,59 +21,71 @@ import { IApps } from 'src/app/Interface/IApps';
   imports: [TaskbarComponent, FrameComponent],
 })
 export class DesktopComponent implements OnInit {
+  /* ───────────────── DOM refs ───────────────── */
   @ViewChild('desktopRef', { static: true })
   desktopRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('startMenuRef', { static: true })
-  startMenuRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('clockRef', { static: true })
-  clockRef!: ElementRef<HTMLDivElement>;
 
-  openWindows: { [key: string]: HTMLElement } = {};
+  /* ───────────────── runtime state ───────────── */
+  openWindows: Record<string, HTMLElement> = {};
   windowZIndex = 10;
-  // Object to store window dimensions for later use
-  windowSizes: { [key: string]: { width: number; height: number } } = {};
 
+  windowSizes: Record<string, { width: number; height: number }> = {};
+
+  /* icon drag */
   isDragging = false;
   currentDragElement: HTMLElement | null = null;
   offsetX = 0;
   offsetY = 0;
+
+  /* default window position */
   defaultLeft = 300;
   defaultTop = 50;
 
-  appPositions: { [key: string]: { x: number; y: number } } = {};
-  appsList: IApps[] = [];
-  constructor(
-    private openAppService: OpenAppService,
-    private appService: AppsService
-  ) {}
+  /* cache to avoid reacting to unchanged status values */
+  private statusCache: Record<string, string> = {};
+
+  constructor(private bus: OpenAppService, private _appsService: AppsService) {}
+
+  /* ───────────────────────── lifecycle ───────────────────────── */
 
   ngOnInit(): void {
-    this.appService.getApps().forEach((app: IApps) => {
-      this.createAppIcon(app);
-    });
+    /* build desktop icons */
+    this._appsService.appsList$.subscribe((apps: IApps[]) =>
+      apps.forEach((app) => this.createAppIcon(app))
+    );
 
-    this.appsList = this.appService.getApps();
+    /* react to “openApp” commands from taskbar / start menu */
+    this.bus.openApp$.subscribe((appId) => this.openApp(appId));
 
-    this.openAppService.openApp$.subscribe((appId) => {
-      this.openApp(appId);
-    });
+    /* react to status changes in the single source‑of‑truth store */
+    this._appsService.status$.subscribe((list) => {
+      list.forEach(({ appId, status }) => {
+        if (this.statusCache[appId] === status) return; // unchanged
+        this.statusCache[appId] = status!;
 
-    this.openAppService.appStatus$.subscribe((app) => {
-      app.status === 'open' && this.openApp(app.appId);
-    });
+        switch (status) {
+          case 'open':
+            if (!this.openWindows[appId]) this.openApp(appId);
+            else this.bringToFront(this.openWindows[appId]);
+            break;
 
-    this.openAppService.appStatus$.subscribe((app) => {
-      if (app.status === 'minimized') {
-        const windowEl = this.openWindows[app.appId];
-        if (windowEl) {
-          windowEl.style.display = 'none';
+          case 'minimized':
+            this.openWindows[appId]?.style.setProperty('display', 'none');
+            break;
+
+          case 'closed':
+            this.closeWindow(appId);
+            break;
         }
-      }
+      });
     });
   }
-  createAppIcon(app: IApps): void {
+
+  /* ───────────────────────── icon handling ───────────────────── */
+
+  private createAppIcon(app: IApps): void {
     const { appId, icon, name, x, y } = app;
-    // The outer icon container
+
     const iconEl = document.createElement('div');
     iconEl.className = 'app-icon';
     iconEl.id = `${appId}-icon`;
@@ -80,61 +93,56 @@ export class DesktopComponent implements OnInit {
     iconEl.style.top = `${y}px`;
     iconEl.setAttribute('data-app', appId);
 
-    // Make the icon container bigger
-    iconEl.style.width = '80px'; // Increase from default
-    iconEl.style.height = '80px'; // Increase from default
+    /* bigger hit‑area */
+    iconEl.style.width = '80px';
+    iconEl.style.height = '80px';
 
-    // The "image" container (same as you used for the emoji)
+    /* visual part */
     const iconImg = document.createElement('div');
     iconImg.className = 'app-icon-img';
+    iconImg.style.width = '60px';
+    iconImg.style.height = '60px';
 
-    // Adjust the size of the image container
-    iconImg.style.width = '60px'; // Increase from default
-    iconImg.style.height = '60px'; // Increase from default
-
-    // Create the actual Material icon element
     const matIcon = document.createElement('span');
     matIcon.className = 'material-icons';
-    matIcon.textContent = icon; // e.g. 'rocket_launch'
+    matIcon.textContent = icon;
+    matIcon.style.fontSize = '36px';
 
-    // Make the Material Icons font size bigger
-    matIcon.style.fontSize = '36px'; // Increase from default
-
-    // Append the Material icon into the iconImg container
     iconImg.appendChild(matIcon);
 
-    // Create the text label
     const iconText = document.createElement('div');
     iconText.className = 'app-icon-text';
     iconText.textContent = name;
+    iconText.style.fontSize = '14px';
 
-    // Adjust text size if needed
-    iconText.style.fontSize = '14px'; // Adjust as needed
-
-    // Append everything
     iconEl.appendChild(iconImg);
     iconEl.appendChild(iconText);
     this.desktopRef.nativeElement.appendChild(iconEl);
 
-    // Events for opening/draggng
+    /* events */
     iconEl.addEventListener('dblclick', () => this.openApp(appId));
     iconEl.addEventListener('mousedown', (e) => this.startDrag(e));
   }
 
+  /* ───────────────────────── open / window helpers ───────────── */
+
   public openApp(appId: string): void {
     if (this.openWindows[appId]) {
-      this.openAppService.updateAppStatus(appId, 'open');
-      this.appService.updateStatus(appId, 'open');
-
+      /* already exists → just restore / bring to front */
+      this._appsService.updateStatus(appId, 'open');
       this.bringToFront(this.openWindows[appId]);
       return;
     }
-    const windowEl = this.createWindow(appId);
 
-    this.openAppService.initApp(windowEl, appId);
+    /* first‑time open */
+    const windowEl = this.createWindow(appId);
+    this.bus.initApp(windowEl, appId); // still emit init event
+    this._appsService.updateStatus(appId, 'open');
   }
-  createWindow(appId: string): HTMLElement {
+
+  private createWindow(appId: string): HTMLElement {
     const desktopEl = this.desktopRef.nativeElement;
+
     const windowEl = document.createElement('div');
     windowEl.className = `app-window ${appId}-app`;
     windowEl.id = `${appId}-window`;
@@ -142,16 +150,18 @@ export class DesktopComponent implements OnInit {
     windowEl.style.left = `${this.defaultLeft}px`;
     windowEl.style.top = `${this.defaultTop}px`;
 
+    /* ───── title bar ───── */
     const titleBar = document.createElement('div');
     titleBar.className = 'window-title';
     titleBar.innerHTML = `
-    <div>${appId || 'Untitled App'}</div>
-    <div class="window-controls">
-      <div class="window-control minimize"></div>
-      <div class="window-control maximize"></div>
-      <div class="window-control close"></div>
-    </div>
-  `;
+      <div>${appId || 'Untitled App'}</div>
+      <div class="window-controls">
+        <div class="window-control minimize"></div>
+        <div class="window-control maximize"></div>
+        <div class="window-control close"></div>
+      </div>
+    `;
+
     const contentEl = document.createElement('div');
     contentEl.className = 'window-content';
 
@@ -159,9 +169,10 @@ export class DesktopComponent implements OnInit {
     windowEl.appendChild(contentEl);
     desktopEl.appendChild(windowEl);
 
+    /* focus / z‑index */
     windowEl.addEventListener('mousedown', () => this.bringToFront(windowEl));
 
-    // Window drag functionality
+    /* drag window */
     titleBar.addEventListener('mousedown', (e) => {
       const target = e.target as HTMLElement;
       if (
@@ -172,31 +183,31 @@ export class DesktopComponent implements OnInit {
       }
     });
 
-    // Double-click to maximize/restore
-    titleBar.addEventListener('dblclick', () => {
-      this.toggleMaximize(windowEl, appId);
-    });
+    /* maximise / restore */
+    titleBar.addEventListener('dblclick', () =>
+      this.toggleMaximize(windowEl, appId)
+    );
 
+    /* window controls */
     const closeBtn = titleBar.querySelector('.close') as HTMLElement;
+    const minBtn = titleBar.querySelector('.minimize') as HTMLElement;
+    const maxBtn = titleBar.querySelector('.maximize') as HTMLElement;
+
     closeBtn.addEventListener('click', () => {
       this.closeWindow(appId);
-      this.openAppService.updateAppStatus(appId, 'closed');
-      this.appService.updateStatus(appId, 'closed');
+      this._appsService.updateStatus(appId, 'closed');
     });
 
-    const minBtn = titleBar.querySelector('.minimize') as HTMLElement;
     minBtn.addEventListener('click', () => {
       windowEl.style.display = 'none';
-      this.openAppService.updateAppStatus(appId, 'minimized');
-      this.appService.updateStatus(appId, 'minimized');
+      this._appsService.updateStatus(appId, 'minimized');
     });
 
-    const maxBtn = titleBar.querySelector('.maximize') as HTMLElement;
-    maxBtn.addEventListener('click', () => {
-      this.toggleMaximize(windowEl, appId);
-    });
+    maxBtn.addEventListener('click', () =>
+      this.toggleMaximize(windowEl, appId)
+    );
 
-    // --- Add resize handles for all edges/corners ---
+    /* resize handles */
     const directions = [
       'top',
       'right',
@@ -210,14 +221,13 @@ export class DesktopComponent implements OnInit {
     directions.forEach((dir) => {
       const handle = document.createElement('div');
       handle.classList.add('resize-handle', dir);
-      // The CSS will position these handles correctly.
       windowEl.appendChild(handle);
       handle.addEventListener('mousedown', (e) =>
         this.startWindowResize(e, windowEl, appId, dir)
       );
     });
 
-    // Store the initial window dimensions
+    /* remember default size */
     this.windowSizes[appId] = {
       width: windowEl.offsetWidth,
       height: windowEl.offsetHeight,
@@ -227,56 +237,14 @@ export class DesktopComponent implements OnInit {
     return windowEl;
   }
 
-  // Add this new helper method to handle maximize/restore toggle
-  toggleMaximize(windowEl: HTMLElement, appId: string): void {
-    if (windowEl.style.width === '100%') {
-      // Restore
-      if (this.windowSizes[appId]) {
-        // Restore to saved size if available
-        windowEl.style.width = `${this.windowSizes[appId].width}px`;
-        windowEl.style.height = `${this.windowSizes[appId].height}px`;
-      } else {
-        // Default size if no saved size
-        windowEl.style.width = '1100px';
-        windowEl.style.height = '500px';
-      }
-      windowEl.style.top = `${this.defaultTop}px`;
-      windowEl.style.left = `${this.defaultLeft}px`;
-
-      // Update maximize button to show "maximize" icon if you have specific classes for this
-      const maxBtn = windowEl.querySelector('.maximize') as HTMLElement;
-      if (maxBtn) {
-        maxBtn.classList.remove('maximized');
-      }
-    } else {
-      // Save current window size before maximizing
-      this.windowSizes[appId] = {
-        width: windowEl.offsetWidth,
-        height: windowEl.offsetHeight,
-      };
-
-      // Maximize
-      windowEl.style.width = '100%';
-      windowEl.style.height = 'calc(100% - 15px)';
-      windowEl.style.top = '0';
-      windowEl.style.left = '0';
-
-      // Update maximize button to show "restore" icon if you have specific classes for this
-      const maxBtn = windowEl.querySelector('.maximize') as HTMLElement;
-      if (maxBtn) {
-        maxBtn.classList.add('maximized');
-      }
-    }
-  }
-
-  bringToFront(windowEl: HTMLElement): void {
+  private bringToFront(windowEl: HTMLElement): void {
     windowEl.style.zIndex = (this.windowZIndex++).toString();
     if (windowEl.style.display === 'none') {
       windowEl.style.display = 'flex';
     }
   }
 
-  closeWindow(appId: string): void {
+  private closeWindow(appId: string): void {
     const windowEl = document.getElementById(`${appId}-window`);
     if (windowEl) {
       windowEl.remove();
@@ -284,14 +252,46 @@ export class DesktopComponent implements OnInit {
     }
   }
 
-  // DRAG ICONS
-  startDrag(event: MouseEvent): void {
+  /* ───────────────────────── maximise / restore ──────────────── */
+
+  private toggleMaximize(windowEl: HTMLElement, appId: string): void {
+    if (windowEl.style.width === '100%') {
+      /* restore */
+      const saved = this.windowSizes[appId];
+      if (saved) {
+        windowEl.style.width = `${saved.width}px`;
+        windowEl.style.height = `${saved.height}px`;
+      } else {
+        windowEl.style.width = '1100px';
+        windowEl.style.height = '500px';
+      }
+      windowEl.style.top = `${this.defaultTop}px`;
+      windowEl.style.left = `${this.defaultLeft}px`;
+      windowEl.querySelector('.maximize')?.classList.remove('maximized');
+    } else {
+      /* save current size then maximise */
+      this.windowSizes[appId] = {
+        width: windowEl.offsetWidth,
+        height: windowEl.offsetHeight,
+      };
+      windowEl.style.width = '100%';
+      windowEl.style.height = 'calc(100% - 15px)';
+      windowEl.style.top = '0';
+      windowEl.style.left = '0';
+      windowEl.querySelector('.maximize')?.classList.add('maximized');
+    }
+  }
+
+  /* ───────────────────────── ICON DRAG ───────────────────────── */
+
+  private startDrag(event: MouseEvent): void {
     const icon = (event.currentTarget as HTMLElement).closest(
       '.app-icon'
     ) as HTMLElement;
     if (!icon) return;
     this.isDragging = true;
     this.currentDragElement = icon;
+
     const rect = icon.getBoundingClientRect();
     this.offsetX = event.clientX - rect.left;
     this.offsetY = event.clientY - rect.top;
@@ -300,8 +300,8 @@ export class DesktopComponent implements OnInit {
     event.preventDefault();
   }
 
-  @HostListener('document:mouseup', ['$event'])
-  stopDrag(): void {
+  @HostListener('document:mouseup')
+  private stopDrag(): void {
     if (this.isDragging && this.currentDragElement) {
       this.currentDragElement.style.zIndex = '1';
       this.isDragging = false;
@@ -310,40 +310,45 @@ export class DesktopComponent implements OnInit {
   }
 
   @HostListener('document:mousemove', ['$event'])
-  drag(event: MouseEvent): void {
+  private drag(event: MouseEvent): void {
     if (!this.isDragging || !this.currentDragElement) return;
+
     const x = event.clientX - this.offsetX;
     const y = event.clientY - this.offsetY;
     this.currentDragElement.style.left = `${x}px`;
     this.currentDragElement.style.top = `${y}px`;
+
     const appId = this.currentDragElement.getAttribute('data-app');
     if (appId) {
-      this.appPositions[appId] = { x, y };
+      /* Persist position if you need it later */
     }
   }
 
-  // DRAG WINDOW (move entire window)
-  startWindowDrag(event: MouseEvent, windowEl: HTMLElement): void {
+  /* ───────────────────────── WINDOW DRAG ─────────────────────── */
+
+  private startWindowDrag(event: MouseEvent, windowEl: HTMLElement): void {
     event.preventDefault();
     const initialX = event.clientX;
     const initialY = event.clientY;
     const initialWindowX = windowEl.offsetLeft;
     const initialWindowY = windowEl.offsetTop;
-    const onDragMove = (moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - initialX;
-      const dy = moveEvent.clientY - initialY;
-      windowEl.style.left = `${initialWindowX + dx}px`;
-      windowEl.style.top = `${initialWindowY + dy}px`;
+
+    const onMove = (move: MouseEvent) => {
+      windowEl.style.left = `${initialWindowX + (move.clientX - initialX)}px`;
+      windowEl.style.top = `${initialWindowY + (move.clientY - initialY)}px`;
     };
-    const onDragEnd = () => {
-      document.removeEventListener('mousemove', onDragMove);
-      document.removeEventListener('mouseup', onDragEnd);
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
-    document.addEventListener('mousemove', onDragMove);
-    document.addEventListener('mouseup', onDragEnd);
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
-  startWindowResize(
+  /* ───────────────────────── WINDOW RESIZE ───────────────────── */
+
+  private startWindowResize(
     event: MouseEvent,
     windowEl: HTMLElement,
     appId: string,
@@ -359,43 +364,40 @@ export class DesktopComponent implements OnInit {
     const initialLeft = windowEl.offsetLeft;
     const initialTop = windowEl.offsetTop;
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      let dx = moveEvent.clientX - initialX;
-      let dy = moveEvent.clientY - initialY;
+    const onMove = (move: MouseEvent) => {
+      let dx = move.clientX - initialX;
+      let dy = move.clientY - initialY;
+
       let newWidth = initialWidth;
       let newHeight = initialHeight;
       let newLeft = initialLeft;
       let newTop = initialTop;
 
-      if (direction.includes('right')) {
-        newWidth = initialWidth + dx;
-      }
+      if (direction.includes('right')) newWidth = initialWidth + dx;
       if (direction.includes('left')) {
         newWidth = Math.max(initialWidth - dx, 0);
         newLeft = initialLeft + (initialWidth - newWidth);
       }
-      if (direction.includes('bottom')) {
-        newHeight = initialHeight + dy;
-      }
+      if (direction.includes('bottom')) newHeight = initialHeight + dy;
       if (direction.includes('top')) {
         newHeight = initialHeight - dy;
         newTop = initialTop + dy;
       }
 
-      windowEl.style.width = newWidth + 'px';
-      windowEl.style.height = newHeight + 'px';
-      windowEl.style.left = newLeft + 'px';
-      windowEl.style.top = newTop + 'px';
+      windowEl.style.width = `${newWidth}px`;
+      windowEl.style.height = `${newHeight}px`;
+      windowEl.style.left = `${newLeft}px`;
+      windowEl.style.top = `${newTop}px`;
 
       this.windowSizes[appId] = { width: newWidth, height: newHeight };
     };
 
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 }
